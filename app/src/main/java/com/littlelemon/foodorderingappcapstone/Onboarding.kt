@@ -1,5 +1,6 @@
 package com.littlelemon.foodorderingappcapstone
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -20,28 +21,36 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.littlelemon.foodorderingappcapstone.ui.theme.AppTheme
 import com.littlelemon.foodorderingappcapstone.ui.theme.FoodOrderingAppCapstoneTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Onboarding(navController: NavHostController) {
+fun Onboarding(navController: NavHostController, preferenceRepo: PreferenceRepo) {
 
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxSize()
     ) {
         Image(
             modifier = Modifier
@@ -120,9 +129,55 @@ fun Onboarding(navController: NavHostController) {
             )
         Button(
             modifier = Modifier
-                .padding(start = 12.dp, top = 100.dp, end = 12.dp)
+                .padding(start = 12.dp, top = 50.dp, end = 12.dp)
                 .fillMaxWidth(),
-            onClick = { /*TODO*/ },
+            onClick = {
+                      if(firstName.isNotBlank() && lastName.isNotBlank() && email.isNotBlank()) {
+                          coroutineScope.launch {
+                              //save user
+                              val isUserSaved = preferenceRepo.saveUser(
+                                  User(
+                                      firstName,
+                                      lastName,
+                                      email
+                                  )
+                              )
+
+                              withContext(Dispatchers.Main) {
+                                  if (isUserSaved) {
+                                      //if user saved successfully than navigate to home
+                                      Toast.makeText(
+                                          context,
+                                          "Registration Successful",
+                                          Toast.LENGTH_SHORT
+                                      ).show()
+
+                                      //remove the login screen from the backstack
+                                      //so if the user press the back button on home screen
+                                      //than app should exit instead of taking the user back
+                                      //to the login screen
+                                      navController.popBackStack()
+
+                                      //navigate to the home screen
+                                      navController.navigate(Home.route)
+                                  } else {
+                                  //user not saved. Tell the user to try again.
+                                      Toast.makeText(
+                                          context,
+                                          "Registration unsuccessful. Please try again.",
+                                          Toast.LENGTH_SHORT
+                                      ).show()
+                                  }
+                              }
+                          }
+                      } else {
+                          Toast.makeText(
+                              context,
+                              "Registration unsuccessful. Please enter all data.",
+                              Toast.LENGTH_LONG
+                          ).show()
+                      }
+            },
             colors = ButtonDefaults.buttonColors(
                 Color(0xFFF4CE14)
             )
@@ -141,6 +196,10 @@ fun Onboarding(navController: NavHostController) {
 @Composable
 fun OnboardingPreview() {
     FoodOrderingAppCapstoneTheme {
-        Onboarding(navController)
+        Onboarding(
+            navController = rememberNavController(),
+            preferenceRepo = PreferenceRepo.getPreferenceRepo(
+                LocalContext.current
+            ))
     }
 }

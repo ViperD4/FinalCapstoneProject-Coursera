@@ -10,37 +10,30 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavController
+import com.littlelemon.foodorderingappcapstone.ui.theme.AppTheme
 import com.littlelemon.foodorderingappcapstone.ui.theme.FoodOrderingAppCapstoneTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val preferenceRepo = PreferenceRepo.getPreferenceRepo(this.applicationContext)
         setContent {
-            FoodOrderingAppCapstoneTheme {
+            AppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    Navigation(navController = NavController, preferenceRepo)
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
-    FoodOrderingAppCapstoneTheme {
-        Greeting("Android")
-    }
-}
+fun MainPreview() {}
