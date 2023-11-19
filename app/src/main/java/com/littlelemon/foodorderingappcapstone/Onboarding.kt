@@ -1,8 +1,8 @@
 package com.littlelemon.foodorderingappcapstone
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,40 +13,40 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.littlelemon.foodorderingappcapstone.ui.theme.AppTheme
 import com.littlelemon.foodorderingappcapstone.ui.theme.FoodOrderingAppCapstoneTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.util.regex.Pattern
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Onboarding(navController: NavHostController, preferenceRepo: PreferenceRepo) {
+fun Onboarding(navController: NavController) {
 
     var firstName by rememberSaveable { mutableStateOf("") }
     var lastName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
+    val userInfo = context.getSharedPreferences(userInfoKeyFile, Context.MODE_PRIVATE)
 
     Column(
         modifier = Modifier
@@ -124,52 +124,33 @@ fun Onboarding(navController: NavHostController, preferenceRepo: PreferenceRepo)
                 .fillMaxWidth()
                 .padding(start = 12.dp, bottom = 30.dp, end = 12.dp),
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                            },
             label = { Text(text = "") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             )
         Button(
             modifier = Modifier
                 .padding(start = 12.dp, top = 50.dp, end = 12.dp)
                 .fillMaxWidth(),
             onClick = {
-                      if(firstName.isNotBlank() && lastName.isNotBlank() && email.isNotBlank()) {
-                          coroutineScope.launch {
-                              //save user
-                              val isUserSaved = preferenceRepo.saveUser(
-                                  User(
-                                      firstName,
-                                      lastName,
-                                      email
-                                  )
-                              )
-
-                              withContext(Dispatchers.Main) {
-                                  if (isUserSaved) {
-                                      //if user saved successfully than navigate to home
-                                      Toast.makeText(
-                                          context,
-                                          "Registration Successful",
-                                          Toast.LENGTH_SHORT
-                                      ).show()
-
-                                      //remove the login screen from the backstack
-                                      //so if the user press the back button on home screen
-                                      //than app should exit instead of taking the user back
-                                      //to the login screen
-                                      navController.popBackStack()
-
-                                      //navigate to the home screen
-                                      navController.navigate(Home.route)
-                                  } else {
-                                  //user not saved. Tell the user to try again.
-                                      Toast.makeText(
-                                          context,
-                                          "Registration unsuccessful. Please try again.",
-                                          Toast.LENGTH_SHORT
-                                      ).show()
-                                  }
-                              }
-                          }
+                      if(firstName.isNotBlank() && lastName.isNotBlank() && isEmailValid(email)) {
+                          userInfo.edit(commit = true) {putString(userFirstName, firstName)}
+                          userInfo.edit(commit = true) {putString(userLastName, lastName)}
+                          userInfo.edit(commit = true) {putString(userEmail, email)}
+                          Toast.makeText(
+                              context,
+                              "Registration successful.",
+                              Toast.LENGTH_LONG
+                          ).show()
+                          navController.navigate(Home.route)
+                      } else if(!isEmailValid(email)) {
+                          Toast.makeText(
+                              context,
+                              "Registration unsuccessful. Please enter valid email address.",
+                              Toast.LENGTH_LONG
+                          ).show()
                       } else {
                           Toast.makeText(
                               context,
@@ -192,14 +173,19 @@ fun Onboarding(navController: NavHostController, preferenceRepo: PreferenceRepo)
 
 }
 
+fun isEmailValid(email: String): Boolean {
+    val pattern = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}\$")
+    val matcher = pattern.matcher(email)
+    return matcher.matches()
+}
+
 @Preview(showBackground = true)
 @Composable
 fun OnboardingPreview() {
     FoodOrderingAppCapstoneTheme {
         Onboarding(
-            navController = rememberNavController(),
-            preferenceRepo = PreferenceRepo.getPreferenceRepo(
-                LocalContext.current
-            ))
+            navController = rememberNavController()
+        )
     }
 }
