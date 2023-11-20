@@ -135,7 +135,7 @@ fun Onboarding(navController: NavController) {
                 .padding(start = 12.dp, top = 50.dp, end = 12.dp)
                 .fillMaxWidth(),
             onClick = {
-                      if(firstName.isNotBlank() && lastName.isNotBlank() && isEmailValid(email)) {
+                      if(firstName.isNotBlank() && lastName.isNotBlank() && email.isNotBlank() && isEmailValid(email)) {
                           userInfo.edit(commit = true) {putString(userFirstName, firstName)}
                           userInfo.edit(commit = true) {putString(userLastName, lastName)}
                           userInfo.edit(commit = true) {putString(userEmail, email)}
@@ -145,7 +145,7 @@ fun Onboarding(navController: NavController) {
                               Toast.LENGTH_LONG
                           ).show()
                           navController.navigate(Home.route)
-                      } else if(!isEmailValid(email)) {
+                      } else if(!isEmailValid(email) && email.isNotBlank()) {
                           Toast.makeText(
                               context,
                               "Registration unsuccessful. Please enter valid email address.",

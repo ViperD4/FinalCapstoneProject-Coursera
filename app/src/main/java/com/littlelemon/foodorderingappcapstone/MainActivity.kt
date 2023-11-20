@@ -37,8 +37,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val menuItemsLiveData = MutableLiveData<List<String>>()
-
     private val database by lazy {
         Room.databaseBuilder(applicationContext, AppDatabase::class.java, "little-lemon")
             .fallbackToDestructiveMigration()
@@ -67,10 +65,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun fetchMenu(): List<MenuItemNetwork> {
-        val response =
-            client.get("https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/littleLemonMenu.json")
-                .body<MenuNetwork>()
-
+        val url =  "https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json"
+        val response = client.get(url).body<MenuNetwork>()
         return response.menuItems
     }
 
