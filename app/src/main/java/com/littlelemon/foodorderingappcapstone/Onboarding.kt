@@ -179,13 +179,3 @@ fun isEmailValid(email: String): Boolean {
     val matcher = pattern.matcher(email)
     return matcher.matches()
 }
-
-@Preview(showBackground = true)
-@Composable
-fun OnboardingPreview() {
-    FoodOrderingAppCapstoneTheme {
-        Onboarding(
-            navController = rememberNavController()
-        )
-    }
-}

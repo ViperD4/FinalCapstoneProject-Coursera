@@ -79,9 +79,3 @@ class MainActivity : ComponentActivity() {
         database.menuItemDao().insertAll(*menuItemsRoom.toTypedArray())
     }
 }
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun MainPreview() {}

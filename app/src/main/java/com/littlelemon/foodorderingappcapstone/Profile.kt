@@ -128,11 +128,3 @@ fun Profile(navController: NavHostController) {
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun ProfilePreview() {
-        Profile(
-            navController = rememberNavController(),
-            )
-    }

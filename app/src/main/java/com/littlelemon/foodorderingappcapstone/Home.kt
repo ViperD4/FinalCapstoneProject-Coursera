@@ -41,48 +41,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.littlelemon.foodorderingappcapstone.ui.theme.AppTheme
 
 @Composable
 fun Home(navController: NavController, database: AppDatabase) {
-    //val databaseMenuItems by database.menuItemDao().getAll().observeAsState(initial = emptyList())
+    val databaseMenuItems by database.menuItemDao().getAll().observeAsState(initial = emptyList())
 
-    Button(onClick = { navController.navigate(Profile.route) }) {
-        Text(text = "Profile")
+    Column {
+        TopAppBar(navController)
+        HeroSection(databaseMenuItems)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeroSection() {
+fun HeroSection(menuItemsLocal: List<MenuItemRoom>) {
+    var menuItems = menuItemsLocal
+    var selectedCategory by remember { mutableStateOf("") }
+
     Column {
-        Box(modifier = Modifier
-            .fillMaxWidth()
-        ) {
-            Image(
-                modifier = Modifier
-                    .height(80.dp)
-                    .fillMaxWidth()
-                    .align(Alignment.Center)
-                    .padding(vertical = 20.dp, horizontal = 32.dp),
-                painter = painterResource(
-                    id = R.drawable.logo),
-                contentDescription = "Logo Image"
-            )
-            IconButton(
-                onClick = { /*TODO*/ },
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 12.dp)
-            ) {
-                    Image(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        painter = painterResource(id = R.drawable.profile),
-                        contentDescription = "Profile"
-                    )
-            }
-        }
 
         Column(
             modifier = Modifier
@@ -115,9 +95,30 @@ fun HeroSection() {
                 Image(
                     painter = painterResource(id = R.drawable.hero_image),
                     contentDescription = "Upper Panel Image",
-                    modifier = Modifier.clip(RoundedCornerShape(20.dp))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(20.dp))
                 )
             }
+        }
+
+        var searchFilter by remember {mutableStateOf("")}
+        OutlinedTextField(
+            label = { Text(text = "Enter search phrase") },
+            value = searchFilter,
+            onValueChange = { searchFilter = it },
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 12.dp, top = 15.dp, bottom = 15.dp, end = 12.dp),
+            leadingIcon = {
+                Icon(
+                    Icons.Default.Search, contentDescription = "Search"
+                )
+            }
+        )
+        if (searchFilter.isNotEmpty()) {
+            menuItems = menuItems.filter { it.title.contains(searchFilter, ignoreCase = true) }
         }
     }
 }
@@ -125,10 +126,4 @@ fun HeroSection() {
 @Composable
 fun MenuItems() {
 
-}
-
-@Preview(showBackground = true)
-@Composable
-fun HerSectionPreview() {
-    HeroSection()
 }
