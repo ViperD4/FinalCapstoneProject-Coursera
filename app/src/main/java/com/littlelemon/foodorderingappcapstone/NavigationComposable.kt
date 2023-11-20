@@ -4,13 +4,13 @@ import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun Navigation(navController: NavController.Companion) {
-    val navController = rememberNavController()
+fun Navigation(navController: NavHostController, database: AppDatabase) {
     NavHost(
         navController = navController,
         startDestination = if(isUserInfo()) {
@@ -23,7 +23,7 @@ fun Navigation(navController: NavController.Companion) {
             Onboarding(navController)
         }
         composable(Home.route) {
-            Home(navController = navController)
+            Home(navController = navController, database)
         }
         composable(Profile.route) {
             Profile(navController = navController)
